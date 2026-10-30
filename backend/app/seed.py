@@ -22,7 +22,7 @@ INITIAL_FAQS = [
     },
     {
         "category": "Courses",
-        "keywords": "self paced live schedule recordings timing flexible access lifetime curriculum duration hours timeline",
+        "keywords": "course structure schedule self paced live recordings timing flexible access lifetime curriculum duration hours timeline syllabus format modules",
         "canonical_answer": "ArchintX offers hybrid learning: all core video modules, interactive code repositories, and hands-on labs are 100% self-paced with lifetime access. Live mentor Q&A sessions are held weekly on Tuesday and Thursday evenings with recorded playbacks available."
     },
     {
