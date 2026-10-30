@@ -30,6 +30,11 @@ INITIAL_FAQS = [
         "keywords": "refund policy money back cancel course cancellation guarantee tuition refund terms billing dispute",
         "canonical_answer": "ArchintX provides a 14-day 100% money-back guarantee for all course enrollments, provided you have completed less than 25% of the curriculum content."
     },
+    {
+        "category": "Courses",
+        "keywords": "course fees tuition cost fees course fee enrollment fee payment plans installment financial aid scholarship",
+        "canonical_answer": "ArchintX course tuition ranges from $499 to $1,499 depending on the specialization track. We provide flexible 3-month interest-free installment plans and need-based scholarships."
+    },
 
     # Category: Certificates
     {
