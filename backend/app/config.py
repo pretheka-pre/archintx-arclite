@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     
     # Matching Engine Parameters
     # High confidence: above this threshold and unambiguous -> Answered
-    HIGH_CONFIDENCE_THRESHOLD: float = float(os.getenv("HIGH_CONFIDENCE_THRESHOLD", "0.25"))
+    HIGH_CONFIDENCE_THRESHOLD: float = float(os.getenv("HIGH_CONFIDENCE_THRESHOLD", "0.22"))
     # Low confidence: between LOW and HIGH -> Unclear; below LOW -> Refused
     LOW_CONFIDENCE_THRESHOLD: float = float(os.getenv("LOW_CONFIDENCE_THRESHOLD", "0.08"))
     # Ambiguity margin: if difference between top 2 scores is <= margin -> Unclear

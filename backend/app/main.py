@@ -2,10 +2,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.app.config import settings
-from backend.app.database import engine, Base, SessionLocal
-from backend.app.seed import seed_database
-from backend.app.routers import chat, auth, admin
+try:
+    from backend.app.config import settings
+    from backend.app.database import engine, Base, SessionLocal
+    from backend.app.seed import seed_database
+    from backend.app.routers import chat, auth, admin
+except ImportError:
+    from app.config import settings
+    from app.database import engine, Base, SessionLocal
+    from app.seed import seed_database
+    from app.routers import chat, auth, admin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

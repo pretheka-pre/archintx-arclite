@@ -39,17 +39,17 @@ INITIAL_FAQS = [
     # Category: Certificates
     {
         "category": "Certificates",
-        "keywords": "receive certificate completion diploma download issue timeline when get credential accredited credentials awards",
+        "keywords": "receive certificate course certificate course completion diploma download issue timeline when get credential accredited credentials awards",
         "canonical_answer": "Upon completing all mandatory assignments, quizzes, and capstone project reviews with a passing grade of 80% or higher, your digital certificate is automatically generated and available for PDF download within 24 hours."
     },
     {
         "category": "Certificates",
-        "keywords": "verify certificate verification authenticity validate credential id check employer valid inspect record",
+        "keywords": "verify certificate verification authenticity validate credential id check employer valid inspect record verify course certificate",
         "canonical_answer": "Every ArchintX certificate includes a unique tamper-proof verification ID and QR code. Employers and educational institutions can instantly verify credentials at archintx.com/verify by entering the Certificate ID."
     },
     {
         "category": "Certificates",
-        "keywords": "linkedin share resume social media add certificate credential export badge digital credential showcase",
+        "keywords": "linkedin share resume social media add certificate credential export badge digital credential showcase course certificate",
         "canonical_answer": "Yes! Your digital certificate page includes a 1-click 'Add to LinkedIn Profile' button which automatically fills the issuing organization, issue date, credential ID, and direct verification URL."
     },
 
