@@ -26,7 +26,9 @@ class Settings(BaseSettings):
     # Low confidence: between LOW and HIGH -> Unclear; below LOW -> Refused
     LOW_CONFIDENCE_THRESHOLD: float = float(os.getenv("LOW_CONFIDENCE_THRESHOLD", "0.08"))
     # Ambiguity margin: if difference between top 2 scores is <= margin -> Unclear
-    AMBIGUITY_MARGIN: float = float(os.getenv("AMBIGUITY_MARGIN", "0.05"))
+    # Only fires when BOTH top results are from DIFFERENT categories.
+    # Lower = more decisive (recommended: 0.02)
+    AMBIGUITY_MARGIN: float = float(os.getenv("AMBIGUITY_MARGIN", "0.02"))
     
     # CORS
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "*")
