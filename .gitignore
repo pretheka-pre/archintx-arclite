@@ -1,7 +1,33 @@
 # ArchintX Arc Lite
+
+# Dependencies & virtual envs
 node_modules/
+.venv/
+
+# Python cache
 __pycache__/
 *.pyc
-.env
-.venv/
+*.pyo
+*.pyd
+*.egg-info/
+
+# Build output
 dist/
+build/
+
+# Environment secrets — NEVER commit these
+.env
+.env.local
+.env.production
+
+# Local SQLite databases (use PostgreSQL in prod)
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
