@@ -3,8 +3,15 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from backend.app.config import settings
 
 db_url = settings.DATABASE_URL
+
+# Normalize legacy postgres:// scheme
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+# Ensure psycopg2 dialect is explicitly set for PostgreSQL
+# (avoids SQLAlchemy trying to import psycopg v3 when only psycopg2-binary is installed)
+if db_url.startswith("postgresql://") and "+psycopg" not in db_url:
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 connect_args = {}
 if db_url.startswith("sqlite"):
