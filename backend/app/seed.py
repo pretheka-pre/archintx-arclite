@@ -127,7 +127,7 @@ INITIAL_FAQS = [
             "help find job job help career help get hired"
         ),
         "canonical_answer": (
-            "Yes. ArchintX Career Services offers 1-on-1 resume reviews, mock technical "
+            "ArchintX Career Services offers 1-on-1 resume reviews, mock technical "
             "interviews, LinkedIn profile optimization, and direct referrals through our "
             "network of over 120 hiring partners across the tech industry."
         )
