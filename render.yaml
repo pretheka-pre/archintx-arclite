@@ -17,7 +17,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: FRONTEND_URL
-        value: https://arclite.vercel.app
+        value: https://archintx-arclite.vercel.app
 
 databases:
   # Managed PostgreSQL

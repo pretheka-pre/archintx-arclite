@@ -106,6 +106,8 @@ archintX/
 
 ## 🗄️ Database Architecture & ER Diagram
 
+Production uses PostgreSQL so the web service can safely share durable data across instances and use a managed database for backups and operations. SQLite is intended for local development and tests.
+
 ```mermaid
 erDiagram
     STAFF {
@@ -141,6 +143,39 @@ erDiagram
 2. **`conversations`**: Immutable audit log of every question, response verdict, latency in milliseconds, user feedback (`up`, `down`, or `null`), and timestamp.
 3. **`staff`**: Staff credentials secured with salted Argon2 password hashes.
 
+### PostgreSQL DDL
+
+```sql
+CREATE TABLE staff (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE faq_entries (
+    id SERIAL PRIMARY KEY,
+    category VARCHAR(50) NOT NULL,
+    keywords TEXT NOT NULL,
+    canonical_answer TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE conversations (
+    id SERIAL PRIMARY KEY,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    category VARCHAR(50),
+    verdict VARCHAR(20) NOT NULL,
+    response_time_ms INTEGER NOT NULL,
+    rating VARCHAR(10),
+    created_at TIMESTAMP WITH TIME ZONE
+);
+```
+
+The API restricts FAQ categories to `Courses`, `Certificates`, `Jobs`, and `Account`.
+
 ---
 
 ## 🧠 AI Matching Algorithm & Anti-Hallucination Design
@@ -158,14 +193,16 @@ flowchart TD
     G -- "No" --> I{"Is S1 < High Confidence Threshold?"}
     I -- "Yes" --> J["Verdict: Unclear<br/>'Query ambiguous / limited detail. Please clarify.'"]
     I -- "No" --> K{"Is (S1 - S2) <= Ambiguity Margin?"}
-    K -- "Yes" --> J
     K -- "No" --> L["Verdict: Answered<br/>Return Canonical Database Answer"]
+    K -- "Yes" --> M{"Are the top FAQs in different categories?"}
+    M -- "Yes" --> J
+    M -- "No" --> L
 ```
 
 ### Confidence Threshold Breakdown
-- **`HIGH_CONFIDENCE_THRESHOLD` (Default: `0.25`)**: Requires sufficient term overlap and n-gram alignment before a canonical answer is declared.
+- **`HIGH_CONFIDENCE_THRESHOLD` (Default: `0.22`)**: Requires sufficient term overlap and n-gram alignment before a canonical answer is declared.
 - **`LOW_CONFIDENCE_THRESHOLD` (Default: `0.08`)**: Differentiates general related terms from completely foreign out-of-scope queries (e.g. general knowledge, stock prices, recipes).
-- **`AMBIGUITY_MARGIN` (Default: `0.05`)**: When two distinct FAQs score nearly identically above the high-confidence threshold (e.g. "Tell me about your programs"), the system avoids guessing and requests clarification (`Unclear`).
+- **`AMBIGUITY_MARGIN` (Default: `0.02`)**: When the two top FAQs score nearly identically above the high-confidence threshold and belong to different categories, the system asks for clarification (`Unclear`). A close match within the same category is not considered ambiguous.
 
 ---
 
@@ -218,8 +255,8 @@ Authenticates staff members.
 - **Request**:
   ```json
   {
-    "email": "admin@archintx.com",
-    "password": "ArchintX2026!Secure"
+    "email": "staff@example.com",
+    "password": "<configured staff password>"
   }
   ```
 - **Response** (`200 OK`):
@@ -227,7 +264,7 @@ Authenticates staff members.
   {
     "access_token": "eyJhbGciOiJIUzI1NiIs...",
     "token_type": "bearer",
-    "email": "admin@archintx.com"
+    "email": "staff@example.com"
   }
   ```
 
@@ -255,6 +292,8 @@ Returns dynamic summary metrics, verdict distributions, latency averages, and do
 - Node.js 18+ and npm
 
 ### 1. Backend Setup
+Before starting the backend, copy `.env.example` to `.env` and set `JWT_SECRET_KEY` to a new random value (at least 32 characters) and `ADMIN_PASSWORD` to a strong password (at least 12 characters). The backend will not start if either value is missing or too short. Never commit `.env`.
+
 ```bash
 # 1. Create and activate virtual environment
 python -m venv .venv
@@ -316,24 +355,28 @@ The backend contains a test suite covering all matching verdicts, anti-hallucina
 
 ## 🌐 Deployment Instructions
 
+### Live URLs
+- Frontend: [https://archintx-arclite.vercel.app](https://archintx-arclite.vercel.app)
+- Backend API: [https://arclite-backend.onrender.com](https://arclite-backend.onrender.com) (`/health` and `/docs`)
+
 ### Deploying Frontend (Vercel)
 1. Push this repository to GitHub.
 2. In Vercel, import the repository and set the **Root Directory** to `frontend`.
 3. Add Environment Variable:
-   - `VITE_API_BASE_URL`: `https://your-backend-service.onrender.com`
+   - `VITE_API_BASE_URL`: `https://arclite-backend.onrender.com`
 4. Deploy! `frontend/vercel.json` ensures client-side routing works seamlessly.
 
 ### Deploying Backend (Render / Railway)
 1. In Render, select **New Web Service** and link your repository.
-2. Set Environment to `Python 3`.
+2. Set Environment to `Python 3`. The root `.python-version` pins the Render runtime to Python 3.11, matching the Dockerfile.
 3. Build Command: `pip install -r backend/requirements.txt`
 4. Start Command: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
 5. Set Environment Variables:
    - `DATABASE_URL`: Your Supabase or Neon PostgreSQL connection string (e.g. `postgresql://user:pass@ep-xyz.neon.tech/neondb?sslmode=require`)
-   - `JWT_SECRET_KEY`: A secure 32+ character random secret
-   - `ADMIN_EMAIL`: Staff email (e.g. `admin@archintx.com`)
-   - `ADMIN_PASSWORD`: Secure staff password
-   - `FRONTEND_URL`: `https://your-frontend.vercel.app`
+   - `JWT_SECRET_KEY`: A newly generated random secret of at least 32 characters
+   - `ADMIN_EMAIL`: Staff email address
+   - `ADMIN_PASSWORD`: A new strong staff password of at least 12 characters; share staff login details only through the private submission channel
+   - `FRONTEND_URL`: `https://archintx-arclite.vercel.app`
 6. Deploy! On startup, tables and seed data will be automatically created.
 
 ---

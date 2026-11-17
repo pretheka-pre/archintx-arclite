@@ -6,27 +6,35 @@ node_modules/
 
 # Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 *.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Build output
 dist/
 build/
+.vite/
 
 # Environment secrets — NEVER commit these
-.env
-.env.local
-.env.production
+.env*
+!.env.example
 
 # Local SQLite databases (use PostgreSQL in prod)
 *.db
+*.db-*
+*.sqlite
 *.sqlite3
 
 # IDE
 .vscode/
 .idea/
+
+# Logs & test output
+*.log
+.coverage*
+htmlcov/
 
 # OS
 .DS_Store

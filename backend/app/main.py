@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,6 +13,8 @@ except ImportError:
     from app.database import engine, Base, SessionLocal
     from app.seed import seed_database
     from app.routers import chat, auth, admin
+
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,9 +56,14 @@ app.add_middleware(
 # Exception handlers
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        "Unhandled server exception at %s",
+        request.scope.get("path", "/"),
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "An internal server error occurred.", "error": str(exc)},
+        content={"detail": "An internal server error occurred."},
     )
 
 # Include Routers

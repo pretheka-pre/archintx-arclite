@@ -1,9 +1,11 @@
+import asyncio
 import os
 import pytest
+from starlette.requests import Request
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from backend.app.main import app
+from backend.app.main import app, global_exception_handler
 from backend.app.database import Base, get_db
 from backend.app.models import Staff, FAQEntry, Conversation
 from backend.app.seed import seed_database
@@ -106,6 +108,22 @@ def test_missing_input_validation(client):
     res_missing = client.post("/chat", json={})
     assert res_missing.status_code == 422
 
+    res_at_limit = client.post("/chat", json={"question": "x" * 500})
+    assert res_at_limit.status_code == 200
+
+    res_too_long = client.post("/chat", json={"question": "x" * 501})
+    assert res_too_long.status_code == 422
+
+def test_global_exception_handler_hides_exception_details():
+    request = Request({"type": "http", "method": "GET", "path": "/"})
+    response = asyncio.run(
+        global_exception_handler(request, RuntimeError("private exception detail"))
+    )
+
+    assert response.status_code == 500
+    assert b'"error"' not in response.body
+    assert b"private exception detail" not in response.body
+
 def test_conversation_logging(client):
     """Test that conversations are persisted in the database with timestamps and latency."""
     res = client.post("/chat", json={"question": "How do I reset my account password?"})
@@ -181,6 +199,17 @@ def test_unauthorized_admin_access(client):
 
 def test_faq_creation_and_editing(client, auth_header):
     """Test that authorized staff can create, read, update, and delete FAQs."""
+    invalid_category_res = client.post(
+        "/admin/faq",
+        json={
+            "category": "Other",
+            "keywords": "invalid category",
+            "canonical_answer": "This should not be stored.",
+        },
+        headers=auth_header,
+    )
+    assert invalid_category_res.status_code == 400
+
     # Create new FAQ
     new_faq_payload = {
         "category": "Jobs",
@@ -192,6 +221,13 @@ def test_faq_creation_and_editing(client, auth_header):
     created_faq = create_res.json()
     faq_id = created_faq["id"]
     assert created_faq["category"] == "Jobs"
+
+    invalid_update_res = client.put(
+        f"/admin/faq/{faq_id}",
+        json={"category": "Other"},
+        headers=auth_header,
+    )
+    assert invalid_update_res.status_code == 400
 
     # Update FAQ
     update_payload = {

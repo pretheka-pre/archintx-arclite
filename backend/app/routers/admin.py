@@ -15,6 +15,18 @@ router = APIRouter(prefix="/admin", tags=["Admin FAQ & Analytics"])
 
 ALLOWED_CATEGORIES = ["Courses", "Certificates", "Jobs", "Account"]
 
+def normalize_category(category: str) -> str:
+    normalized = category.strip()
+    for allowed in ALLOWED_CATEGORIES:
+        if normalized.casefold() == allowed.casefold():
+            return allowed
+
+    allowed_categories = ", ".join(ALLOWED_CATEGORIES)
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Category must be one of: {allowed_categories}.",
+    )
+
 # ==================== FAQ MANAGEMENT ====================
 
 @router.get("/faq", response_model=List[FAQResponse])
@@ -45,7 +57,7 @@ def create_faq(
     db: Session = Depends(get_db),
     current_staff: Staff = Depends(get_current_staff)
 ):
-    category = payload.category.strip().capitalize()
+    category = payload.category.strip()
     keywords = payload.keywords.strip()
     answer = payload.canonical_answer.strip()
 
@@ -55,11 +67,7 @@ def create_faq(
             detail="Category, trigger keywords, and canonical answer are all required."
         )
 
-    # Normalize category capitalization if matched in standard set
-    for allowed in ALLOWED_CATEGORIES:
-        if category.lower() == allowed.lower():
-            category = allowed
-            break
+    category = normalize_category(category)
 
     faq = FAQEntry(
         category=category,
@@ -91,11 +99,7 @@ def update_faq(
         cat = payload.category.strip()
         if not cat:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category cannot be empty.")
-        for allowed in ALLOWED_CATEGORIES:
-            if cat.lower() == allowed.lower():
-                cat = allowed
-                break
-        faq.category = cat
+        faq.category = normalize_category(cat)
 
     if payload.keywords is not None:
         kw = payload.keywords.strip()

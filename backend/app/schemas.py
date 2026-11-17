@@ -3,7 +3,7 @@ from typing import Optional, List, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
 class ChatRequest(BaseModel):
-    question: str = Field(..., min_length=1, description="User question")
+    question: str = Field(..., min_length=1, max_length=500, description="User question")
 
 class ChatResponse(BaseModel):
     conversation_id: int
