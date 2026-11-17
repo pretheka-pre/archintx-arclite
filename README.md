@@ -1,110 +1,38 @@
-# Arc Lite – AI-Powered FAQ Assistant
-### Intelligent Knowledge Assistant for ArchintX
+# Arc Lite – FAQ Assistant for ArchintX
 
-**Arc Lite** is a production-quality, enterprise-grade AI FAQ assistant engineered for **ArchintX**. Built with a strict **anti-hallucination architecture**, Arc Lite never fabricates facts, company policies, courses, certificates, jobs, or accounts. Instead, it utilizes **TF-IDF vectorization and cosine similarity** against verified canonical database records to deliver confident answers, ask for clarification when queries are ambiguous, and decisively refuse out-of-scope inquiries.
+Arc Lite answers questions about ArchintX **courses, certificates, jobs and accounts** from a staff-managed FAQ knowledge base. Its one rule: **refuse, don't guess.** If no FAQ entry matches confidently, it says so instead of inventing an answer.
 
----
+| | |
+|---|---|
+| **Live frontend** | `https://archintx-arclite.vercel.app` |
+| **Live backend API** | `https://arclite-backend.onrender.com` (interactive docs at `/docs`, health check at `/health`) |
+| **Staff test login** | Provided in the submission form (not stored in this repo) |
 
-## 🚀 Key Features
-
-### 1. Public Chatbot Assistant
-- **Zero Login Barrier**: Freely accessible to students and visitors.
-- **Strict Anti-Hallucination Matching**: High-confidence matches return canonical answers, ambiguous requests prompt clarification (`Unclear`), and irrelevant queries are rejected (`Refused`).
-- **Telemetry & Category Metadata**: Displays the matched FAQ category (Courses, Certificates, Jobs, Account), verdict status badge, and real-time inference latency (in ms).
-- **Interactive Feedback**: 1-click Thumbs-Up and Thumbs-Down rating buttons directly linked to conversation records.
-- **Session History & Quick Starters**: Quick-action prompt chips and session memory.
-
-### 2. Staff Authentication & Protected Portal
-- **JWT Authentication**: Argon2 password hashing and secure Bearer tokens.
-- **Seeded Administration**: Automated, secure seeding of staff credentials from environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`).
-- **Protected Routing**: Unauthorized visitors are prevented from accessing staff tools.
-
-### 3. FAQ Knowledge Base Management
-- **Full CRUD Support**: Add, edit, delete, search, and filter FAQ entries.
-- **Immediate Live Effect**: Changes to trigger keywords or canonical answers update the chatbot matching system without application restart.
-- **4 Standard Categories**: Courses, Certificates, Jobs, and Account.
-
-### 4. Dynamic Analytics & Audit Dashboard
-- **100% Real Database Telemetry**: Computes metrics on-the-fly directly from the `conversations` table—never mock data.
-- **Interactive Visualizations (Recharts)**:
-  1. Verdict distribution by category.
-  2. Average latency / response time by category.
-  3. Quality audit of answered queries down-voted by users.
-- **Detailed Human Review Table**: Filter and inspect every conversation where an answered query received a thumbs-down rating for continuous knowledge base refinement.
+> **Note:** the backend runs on a free tier and sleeps when idle. The first request after a quiet period can take 30–60 seconds. Please retry once if it seems slow.
 
 ---
 
-## 🛠️ Technology Stack
+## 1. Features
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React 19, Vite, TypeScript, Tailwind CSS, Lucide React, Axios, Recharts |
-| **Backend** | Python 3.11+, FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2 |
-| **AI Matching** | Scikit-Learn (`TfidfVectorizer`, Cosine Similarity), NumPy |
-| **Database** | PostgreSQL (Neon, Supabase) / SQLite (Zero-config local development) |
-| **Authentication** | JWT (`PyJWT`), Argon2 (`argon2-cffi`) |
-| **Testing** | Pytest, FastAPI TestClient, HTTPX |
-| **Deployment** | Vercel / Netlify (Frontend), Render / Railway / Docker (Backend) |
+- **Public chat page** (no login): question box, answer, matched category, verdict badge (Answered / Unclear / Refused), response time, thumbs up / down.
+- **Staff login**: email + password, JWT token, real error on wrong credentials.
+- **FAQ Manager** (staff): add, edit, delete, search and filter entries (category, trigger keywords, canonical answer). Changes affect matching immediately, no restart needed.
+- **Analytics dashboard** (staff): verdict counts by category, average response time by category, and every conversation marked `Answered` but rated `down`. All numbers are computed live from the `conversations` table.
+- Responsive at desktop and mobile widths. All on-screen data comes from the API.
 
----
+## 2. Tech stack and why
 
-## 📁 Project Structure
+| Layer | Choice |
+|---|---|
+| Frontend | React + Vite + TypeScript, Tailwind CSS, Axios, Recharts (hosted on Vercel) |
+| Backend | Python, FastAPI, SQLAlchemy 2 (hosted on Render) |
+| Matching | scikit-learn `TfidfVectorizer` + cosine similarity (no LLM) |
+| Auth | Argon2 password hashing, JWT (PyJWT) |
+| Database | **PostgreSQL on Neon** in production, SQLite for local development |
 
-```text
-archintX/
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── config.py             # App settings & threshold configuration
-│   │   ├── database.py           # SQLAlchemy engine & session manager
-│   │   ├── models.py             # FAQEntry, Conversation, Staff DB models
-│   │   ├── schemas.py            # Pydantic validation schemas
-│   │   ├── auth.py               # Argon2 password hashing & JWT handling
-│   │   ├── matcher.py            # TF-IDF cosine similarity anti-hallucination engine
-│   │   ├── seed.py               # 13+ production FAQs & staff account seeder
-│   │   ├── main.py               # FastAPI application & CORS setup
-│   │   └── routers/
-│   │       ├── __init__.py
-│   │       ├── chat.py           # POST /chat, POST /chat/{id}/rate
-│   │       ├── auth.py           # POST /auth/login, GET /auth/me
-│   │       └── admin.py          # /admin/faq, /admin/stats
-│   ├── tests/
-│   │   ├── __init__.py
-│   │   └── test_all.py           # Comprehensive pytest suite (13 test cases)
-│   ├── Dockerfile                # Production container specification
-│   ├── Procfile                  # Platform-as-a-Service runner
-│   └── requirements.txt          # Python dependencies
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   │   ├── client.ts         # Axios client with JWT interceptor
-│   │   │   └── types.ts          # TypeScript interfaces & types
-│   │   ├── context/
-│   │   │   └── AuthContext.tsx   # Global authentication state
-│   │   ├── components/
-│   │   │   ├── Navbar.tsx        # Responsive navigation & portal switch
-│   │   │   ├── VerdictBadge.tsx  # Answered / Refused / Unclear badges
-│   │   │   └── CategoryBadge.tsx # Courses / Certificates / Jobs / Account badges
-│   │   ├── pages/
-│   │   │   ├── ChatPage.tsx      # Public FAQ chatbot interface
-│   │   │   ├── LoginPage.tsx     # Staff sign-in view
-│   │   │   ├── FaqManagement.tsx # Staff FAQ editor & keyword manager
-│   │   │   └── AnalyticsPage.tsx # Real-time telemetry & review table
-│   │   ├── App.tsx               # View routing and layout wrapper
-│   │   ├── main.tsx              # React DOM entrypoint
-│   │   └── index.css             # Tailwind base & custom scrollbar
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   ├── package.json
-│   └── vercel.json               # SPA routing configuration
-├── render.yaml                   # Infrastructure-as-code for Render
-├── .env.example                  # Environment variables template
-└── README.md                     # Documentation
-```
+**Why PostgreSQL (Neon):** the analytics need real aggregation (`COUNT`, `AVG`, `GROUP BY`) over a growing `conversations` table, and ratings are written concurrently by public users. PostgreSQL handles concurrent writes safely, its free tier is hosted (not localhost), and SQLAlchemy lets the same code run on SQLite locally with zero setup. A document store would add nothing here because the data is small, relational and fixed-shape.
 
----
-
-## 🗄️ Database Architecture & ER Diagram
+## 3. Database schema
 
 Production uses PostgreSQL so the web service can safely share durable data across instances and use a managed database for backups and operations. SQLite is intended for local development and tests.
 
@@ -116,7 +44,6 @@ erDiagram
         string password_hash
         datetime created_at
     }
-
     FAQ_ENTRIES {
         int id PK
         string category
@@ -125,265 +52,156 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-
     CONVERSATIONS {
         int id PK
         text question
         text answer
-        string category
-        string verdict
+        string category "NULL when Refused or Unclear"
+        string verdict "Answered | Refused | Unclear"
         int response_time_ms
-        string rating
+        string rating "up | down | NULL"
         datetime created_at
     }
 ```
 
-### Table Descriptions
-1. **`faq_entries`**: Stored canonical answers and keyword triggers indexed by category (`Courses`, `Certificates`, `Jobs`, `Account`).
-2. **`conversations`**: Immutable audit log of every question, response verdict, latency in milliseconds, user feedback (`up`, `down`, or `null`), and timestamp.
-3. **`staff`**: Staff credentials secured with salted Argon2 password hashes.
-
-### PostgreSQL DDL
+`conversations` is not linked by foreign key to `faq_entries` on purpose: a conversation is an audit record, so it must stay intact if staff later edit or delete the FAQ entry that answered it. The answer text is stored on the row.
 
 ```sql
-CREATE TABLE staff (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE
-);
-
 CREATE TABLE faq_entries (
-    id SERIAL PRIMARY KEY,
-    category VARCHAR(50) NOT NULL,
-    keywords TEXT NOT NULL,
-    canonical_answer TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE,
-    updated_at TIMESTAMP WITH TIME ZONE
+  id SERIAL PRIMARY KEY,
+  category VARCHAR(50) NOT NULL,          -- Courses | Certificates | Jobs | Account
+  keywords TEXT NOT NULL,                 -- trigger keywords / phrases
+  canonical_answer TEXT NOT NULL,
+  created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ
 );
-
 CREATE TABLE conversations (
-    id SERIAL PRIMARY KEY,
-    question TEXT NOT NULL,
-    answer TEXT NOT NULL,
-    category VARCHAR(50),
-    verdict VARCHAR(20) NOT NULL,
-    response_time_ms INTEGER NOT NULL,
-    rating VARCHAR(10),
-    created_at TIMESTAMP WITH TIME ZONE
+  id SERIAL PRIMARY KEY,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  category VARCHAR(50),                   -- NULL for Refused / Unclear
+  verdict VARCHAR(20) NOT NULL,
+  response_time_ms INTEGER NOT NULL,      -- measured per request
+  rating VARCHAR(10),                     -- 'up' | 'down' | NULL
+  created_at TIMESTAMPTZ
+);
+CREATE TABLE staff (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,    -- Argon2 hash, never plain text
+  created_at TIMESTAMPTZ
 );
 ```
 
 The API restricts FAQ categories to `Courses`, `Certificates`, `Jobs`, and `Account`.
 
----
+**Seed data** (runs on startup only when tables are empty): 14 FAQ entries (Courses 5, Certificates 3, Jobs 3, Account 3) and one staff account created from the `ADMIN_EMAIL` / `ADMIN_PASSWORD` environment variables. There is no public signup.
 
-## 🧠 AI Matching Algorithm & Anti-Hallucination Design
+## 4. How the matching works
 
-### Workflow
+1. **Clean** the question (lowercase, collapse whitespace). Empty or under 3 characters → `Refused`.
+2. **Load** all FAQ entries from the database (so staff edits apply instantly).
+3. **Vectorise.** For each FAQ, the document is its trigger keywords plus its category name (repeated 3 times). The canonical answer text is deliberately *not* used, so answer wording cannot create false matches. TF-IDF uses unigrams and bigrams and removes English stop words plus domain noise words ("hello", "please", "archintx", …).
+4. **Score** the question against every FAQ with cosine similarity. Let `S1` be the best score and `S2` the runner-up.
+5. **Decide:**
+
 ```mermaid
 flowchart TD
-    A["User submits question"] --> B["Preprocess & clean text (strip, lowercase)"]
-    B --> C["Fetch live FAQ entries from database"]
-    C --> D["Build TF-IDF matrix using n-grams (1, 2) & domain stopwords"]
-    D --> E["Compute Cosine Similarity between question and all FAQs"]
-    E --> F["Extract Top Score (S1) and Runner-up Score (S2)"]
-    F --> G{"Is S1 < Low Confidence Threshold?"}
-    G -- "Yes" --> H["Verdict: Refused<br/>'I don't have verified information about that.'"]
-    G -- "No" --> I{"Is S1 < High Confidence Threshold?"}
-    I -- "Yes" --> J["Verdict: Unclear<br/>'Query ambiguous / limited detail. Please clarify.'"]
-    I -- "No" --> K{"Is (S1 - S2) <= Ambiguity Margin?"}
-    K -- "No" --> L["Verdict: Answered<br/>Return Canonical Database Answer"]
-    K -- "Yes" --> M{"Are the top FAQs in different categories?"}
-    M -- "Yes" --> J
-    M -- "No" --> L
+    A["Question"] --> B{"S1 < LOW (0.08)?"}
+    B -- Yes --> R["Refused: no verified information"]
+    B -- No --> C{"S1 < HIGH (0.22)?"}
+    C -- Yes --> U["Unclear: ask user to clarify"]
+    C -- No --> D{"S2 >= HIGH, S1 - S2 <= 0.02,<br/>and different categories?"}
+    D -- Yes --> U
+    D -- No --> ANS["Answered: return canonical answer"]
 ```
 
-### Confidence Threshold Breakdown
-- **`HIGH_CONFIDENCE_THRESHOLD` (Default: `0.22`)**: Requires sufficient term overlap and n-gram alignment before a canonical answer is declared.
-- **`LOW_CONFIDENCE_THRESHOLD` (Default: `0.08`)**: Differentiates general related terms from completely foreign out-of-scope queries (e.g. general knowledge, stock prices, recipes).
-- **`AMBIGUITY_MARGIN` (Default: `0.02`)**: When the two top FAQs score nearly identically above the high-confidence threshold and belong to different categories, the system asks for clarification (`Unclear`). A close match within the same category is not considered ambiguous.
+| Setting | Default | Meaning |
+|---|---|---|
+| `LOW_CONFIDENCE_THRESHOLD` | 0.08 | below this → `Refused` (unrelated) |
+| `HIGH_CONFIDENCE_THRESHOLD` | 0.22 | below this → `Unclear`; at or above → eligible to answer |
+| `AMBIGUITY_MARGIN` | 0.02 | two close scores from *different* categories → `Unclear` |
 
----
+Two close scores from the *same* category are not treated as ambiguous: the higher-scoring entry wins. Only canonical answers written by staff are ever returned, so Arc Lite cannot produce text that is not in the knowledge base.
 
-## 🔌 API Endpoint Documentation
+**Response time** is measured with `time.perf_counter()` around the database fetch plus matching for each request, then stored on the conversation row (minimum recorded value is 1 ms).
 
-### Public Endpoints
+## 5. API
 
-#### `POST /chat`
-Submits a question to the assistant.
-- **Request**:
-  ```json
-  {
-    "question": "How can I enroll in a course?"
-  }
-  ```
-- **Response** (`200 OK`):
-  ```json
-  {
-    "conversation_id": 1,
-    "answer": "To enroll in an ArchintX course, navigate to our Course Catalog, select your desired track (AI Engineering, Full Stack, or Cloud Architecture), and click 'Enroll Now'. Complete the registration form and tuition checkout to gain immediate access to the course portal.",
-    "category": "Courses",
-    "verdict": "Answered",
-    "response_time_ms": 32
-  }
-  ```
+| Method and path | Access | Success | Errors |
+|---|---|---|---|
+| `POST /chat` `{question}` | public | 200 `{conversation_id, answer, category, verdict, response_time_ms}` | 400 blank, 422 missing/invalid body or question over 500 characters |
+| `POST /chat/{id}/rate` `{rating: "up"\|"down"}` | public | 200 | 404 unknown id, 422 bad rating |
+| `POST /auth/login` `{email, password}` | public | 200 `{access_token, token_type, email}` | 401 wrong credentials |
+| `GET /auth/me` | staff | 200 | 401 |
+| `GET /admin/faq?search=&category=` | staff | 200 list | 401 |
+| `POST /admin/faq` | staff | 201 | 400 empty field or unsupported category, 401 |
+| `PUT /admin/faq/{id}` | staff | 200 | 400 invalid field or unsupported category, 401, 404 |
+| `DELETE /admin/faq/{id}` | staff | 200 | 401, 404 |
+| `GET /admin/stats` | staff | 200 summary, verdict-by-category, avg response time by category, answered-but-rated-down list, recent conversations | 401 |
 
-#### `POST /chat/{id}/rate`
-Records user satisfaction (`up` or `down`).
-- **Request**:
-  ```json
-  {
-    "rating": "up"
-  }
-  ```
-- **Response** (`200 OK`):
-  ```json
-  {
-    "status": "success",
-    "conversation_id": 1,
-    "rating": "up"
-  }
-  ```
+Staff routes need the header `Authorization: Bearer <token>`.
 
----
+## 6. Environment variables
 
-### Staff & Protected Endpoints
+**Backend** (see `.env.example`):
 
-#### `POST /auth/login`
-Authenticates staff members.
-- **Request**:
-  ```json
-  {
-    "email": "staff@example.com",
-    "password": "<configured staff password>"
-  }
-  ```
-- **Response** (`200 OK`):
-  ```json
-  {
-    "access_token": "eyJhbGciOiJIUzI1NiIs...",
-    "token_type": "bearer",
-    "email": "staff@example.com"
-  }
-  ```
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string (defaults to local SQLite) |
+| `JWT_SECRET_KEY` | Random secret of at least 32 characters; required at startup |
+| `ADMIN_EMAIL` | Staff email for the seeded account |
+| `ADMIN_PASSWORD` | Staff password of at least 12 characters; required at startup |
+| `FRONTEND_URL` | exact deployed frontend origin for CORS, no trailing slash |
+| `HIGH_CONFIDENCE_THRESHOLD`, `LOW_CONFIDENCE_THRESHOLD`, `AMBIGUITY_MARGIN` | matching thresholds |
 
-#### `GET /admin/faq` *(Bearer Auth)*
-Lists FAQs. Supports `?category=Courses` and `?search=enroll`.
+**Frontend:** `VITE_API_BASE_URL` = `https://arclite-backend.onrender.com`. It is read at **build time**, so set it in Vercel before deploying and redeploy after changing it.
 
-#### `POST /admin/faq` *(Bearer Auth)*
-Creates a new FAQ entry (`201 Created`).
+## 7. Run locally
 
-#### `PUT /admin/faq/{id}` *(Bearer Auth)*
-Updates existing FAQ keywords or canonical text.
-
-#### `DELETE /admin/faq/{id}` *(Bearer Auth)*
-Removes an FAQ entry.
-
-#### `GET /admin/stats` *(Bearer Auth)*
-Returns dynamic summary metrics, verdict distributions, latency averages, and down-voted answered conversations.
-
----
-
-## 💻 Local Installation & Setup
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+ and npm
-
-### 1. Backend Setup
-Before starting the backend, copy `.env.example` to `.env` and set `JWT_SECRET_KEY` to a new random value (at least 32 characters) and `ADMIN_PASSWORD` to a strong password (at least 12 characters). The backend will not start if either value is missing or too short. Never commit `.env`.
+Use Python 3.11 as specified in `.python-version`. Before starting the backend, copy `.env.example` to `.env` and set `JWT_SECRET_KEY` to a random value of at least 32 characters and `ADMIN_PASSWORD` to a strong password of at least 12 characters. The backend will not start if either value is missing or too short. Never commit `.env`.
 
 ```bash
-# 1. Create and activate virtual environment
+# Backend (from the repo root)
 python -m venv .venv
-
-# Windows
-.\.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
-
-# 2. Install dependencies
+source .venv/bin/activate            # Windows: .\.venv\Scripts\activate
 pip install -r backend/requirements.txt
-
-# 3. Seed database (creates tables, admin account, and 13+ standard FAQs)
-python -m backend.app.seed
-
-# 4. Start backend server
+cp .env.example .env                 # then fill in values
+python -m backend.app.seed           # creates tables, FAQs, staff account
 uvicorn backend.app.main:app --reload --port 8000
-```
-Backend API will be accessible at `http://localhost:8000` (Interactive docs at `http://localhost:8000/docs`).
 
-### 2. Frontend Setup
-```bash
-# 1. Navigate to frontend directory
+# Frontend
 cd frontend
-
-# 2. Install dependencies
+cp .env.example .env                 # VITE_API_BASE_URL=http://localhost:8000
 npm install
-
-# 3. Start development server
-npm run dev
+npm run dev                          # http://localhost:5173
 ```
-Frontend web application will open at `http://localhost:5173`.
 
----
-
-## 🧪 Running the Test Suite
-
-The backend contains a test suite covering all matching verdicts, anti-hallucination guarantees, authentication, feedback, and telemetry calculations:
+## 8. Tests
 
 ```bash
-# Run backend tests
-.\.venv\Scripts\python -m pytest -v backend/tests/test_all.py
+python -m pytest -v backend/tests/test_all.py
 ```
 
-### Test Coverage Highlights:
-- `test_successful_faq_matching`: Verified questions return `Answered` and canonical content.
-- `test_unrelated_question_refusal`: Out-of-scope inquiries ("What is the capital of Japan?") return `Refused`.
-- `test_anti_hallucination_guarantee`: Bait queries (stock prices, black holes, cake recipes, poems) are refused.
-- `test_ambiguous_question_handling`: Ambiguous queries ("Tell me about your programs") return `Unclear`.
-- `test_missing_input_validation`: Empty inputs return HTTP 400/422.
-- `test_conversation_logging`: Verifies persistence of queries and latency in the database.
-- `test_thumbs_up_feedback` & `test_thumbs_down_feedback`: Verifies user rating mutation.
-- `test_staff_authentication_success` & `test_staff_authentication_invalid_credentials`: Verifies JWT issuance and 401 handling.
-- `test_unauthorized_admin_access`: Protected endpoints reject requests without a valid Bearer token.
-- `test_faq_creation_and_editing`: Verifies that adding and editing an FAQ immediately affects chatbot matching.
-- `test_analytics_calculations`: Verifies live statistics computation from database records.
+14 tests cover matching, refusal and ambiguity behavior, question-length validation, conversation logging, feedback, staff authentication, category validation, authorization, FAQ updates, and analytics.
 
----
+## 9. Deployment
 
-## 🌐 Deployment Instructions
+- **Frontend (Vercel):** root directory `frontend`, set `VITE_API_BASE_URL=https://arclite-backend.onrender.com`, and redeploy after changing environment variables. `vercel.json` rewrites all routes to `index.html`.
+- **Backend (Render):** use Python 3.11 (from `.python-version`), build with `pip install -r backend/requirements.txt`, and start with `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`. Set the environment variables above in Render, including the exact CORS origin `FRONTEND_URL=https://archintx-arclite.vercel.app`.
+- **Database (Neon):** set `DATABASE_URL` in the Render service to the intended Neon PostgreSQL connection string. Tables and seed data are created automatically on first start.
 
 ### Live URLs
 - Frontend: [https://archintx-arclite.vercel.app](https://archintx-arclite.vercel.app)
 - Backend API: [https://arclite-backend.onrender.com](https://arclite-backend.onrender.com) (`/health` and `/docs`)
 
-### Deploying Frontend (Vercel)
-1. Push this repository to GitHub.
-2. In Vercel, import the repository and set the **Root Directory** to `frontend`.
-3. Add Environment Variable:
-   - `VITE_API_BASE_URL`: `https://arclite-backend.onrender.com`
-4. Deploy! `frontend/vercel.json` ensures client-side routing works seamlessly.
+## 10. Security notes
 
-### Deploying Backend (Render / Railway)
-1. In Render, select **New Web Service** and link your repository.
-2. Set Environment to `Python 3`. The root `.python-version` pins the Render runtime to Python 3.11, matching the Dockerfile.
-3. Build Command: `pip install -r backend/requirements.txt`
-4. Start Command: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
-5. Set Environment Variables:
-   - `DATABASE_URL`: Your Supabase or Neon PostgreSQL connection string (e.g. `postgresql://user:pass@ep-xyz.neon.tech/neondb?sslmode=require`)
-   - `JWT_SECRET_KEY`: A newly generated random secret of at least 32 characters
-   - `ADMIN_EMAIL`: Staff email address
-   - `ADMIN_PASSWORD`: A new strong staff password of at least 12 characters; share staff login details only through the private submission channel
-   - `FRONTEND_URL`: `https://archintx-arclite.vercel.app`
-6. Deploy! On startup, tables and seed data will be automatically created.
+- Passwords are hashed with Argon2 and are never stored, returned or logged in plain text.
+- Staff routes verify a signed JWT on every request; there is no public signup.
+- All database access goes through SQLAlchemy (parameterised queries).
+- Secrets live in environment variables; `.env` files and local `.db` files are git-ignored.
 
----
+## 11. Known limitations
 
-## 🔒 Security Best Practices
-- **Never Log Secrets**: Passwords are never logged or stored in plain-text.
-- **Argon2id Hashing**: Protected against GPU-accelerated brute force attacks.
-- **Stateless JWT**: Cryptographically signed tokens with strict expiration.
-- **SQL Injection Immune**: All queries use SQLAlchemy ORM parameterization.
-- **CORS Hardened**: Restricted to authorized origins in production.
+- Matching is keyword-based, so a question that shares a topic word with an FAQ (for example "course") but asks about something the FAQ does not cover can still score above the threshold. Keeping trigger keywords specific, and reviewing the dashboard's "Answered but rated down" list, is how staff catch these.
+- The free hosting tier has cold starts.
