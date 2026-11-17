@@ -5,7 +5,7 @@
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 ### 1. Public Chatbot Assistant
 - **Zero Login Barrier**: Freely accessible to students and visitors.
@@ -34,7 +34,7 @@
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 | Layer | Technologies |
 | :--- | :--- |
@@ -48,7 +48,7 @@
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 archintX/
@@ -143,7 +143,7 @@ erDiagram
 
 ---
 
-## 🧠 AI Matching Algorithm & Anti-Hallucination Design
+##  AI Matching Algorithm & Anti-Hallucination Design
 
 ### Workflow
 ```mermaid
@@ -290,7 +290,7 @@ Frontend web application will open at `http://localhost:5173`.
 
 ---
 
-## 🧪 Running the Test Suite
+##  Running the Test Suite
 
 The backend contains a test suite covering all matching verdicts, anti-hallucination guarantees, authentication, feedback, and telemetry calculations:
 
@@ -314,7 +314,7 @@ The backend contains a test suite covering all matching verdicts, anti-hallucina
 
 ---
 
-## 🌐 Deployment Instructions
+##  Deployment Instructions
 
 ### Deploying Frontend (Vercel)
 1. Push this repository to GitHub.
@@ -338,7 +338,7 @@ The backend contains a test suite covering all matching verdicts, anti-hallucina
 
 ---
 
-## 🔒 Security Best Practices
+##  Security Best Practices
 - **Never Log Secrets**: Passwords are never logged or stored in plain-text.
 - **Argon2id Hashing**: Protected against GPU-accelerated brute force attacks.
 - **Stateless JWT**: Cryptographically signed tokens with strict expiration.
