@@ -104,7 +104,7 @@ archintX/
 
 ---
 
-## 🗄️ Database Architecture & ER Diagram
+##  Database Architecture & ER Diagram
 
 ```mermaid
 erDiagram
@@ -169,7 +169,7 @@ flowchart TD
 
 ---
 
-## 🔌 API Endpoint Documentation
+##  API Endpoint Documentation
 
 ### Public Endpoints
 
@@ -248,7 +248,7 @@ Returns dynamic summary metrics, verdict distributions, latency averages, and do
 
 ---
 
-## 💻 Local Installation & Setup
+##  Local Installation & Setup
 
 ### Prerequisites
 - Python 3.11+
